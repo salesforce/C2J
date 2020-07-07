@@ -17,11 +17,11 @@ namespace SFLibReflector
 
             var types = a.GetTypes()
                 .Where(x => !x.IsInterface /*&& !x.IsAbstract*/ && x.IsClass)
-                .Where(c=> c.Name != "<>c" &&
+                .Where(c => c.Name != "<>c" &&
                             !c.Name.StartsWith("<>c__DisplayClass") && !c.Name.StartsWith("<>f__AnonymousType"))
                 .Where(c =>
                     //!new[] {"Object", "DefaultContractResolver"}.Contains(c.BaseType.Name)
-                     c.IsDefined(typeof(JsonObjectAttribute), true))
+                    c.IsDefined(typeof(JsonObjectAttribute), true))
                 .Where(c => !c.IsGenericType)
                 .Where(c => !c.IsSubclassOf(typeof(Exception)))
                 .Where(c => !c.IsSubclassOf(typeof(Attribute)));
@@ -126,19 +126,21 @@ namespace SFLibReflector
             return yml.ToString();
         }
 
-        public static void Reflect()
+        public static string Reflect()
         {
             var assemblyName = "TestAssembly";
             var t = typeof(Employee);
             var a = Assembly.Load(assemblyName);
             var classes =
                 GetAllClasses(assemblyName) //.Where(t => t.IsDefined(typeof(JsonObjectAttribute), true))
-                     .OrderBy(c => c.Name).ToList();
+                    .OrderBy(c => c.Name).ToList();
 
-            Console.WriteLine($"# {classes.Count()} Classes");
+            var reflect = new StringBuilder($"# {classes.Count()} Classes");
             classes = classes;
             foreach (var c in classes)
-                Console.WriteLine(ToYaml(c));
+                reflect.AppendLine(ToYaml(c));
+
+            return reflect.ToString();
         }
     }
 }
