@@ -128,7 +128,7 @@ namespace SFLibReflector
 
         public static string Reflect()
         {
-            var assemblyName = "TestAssembly";
+            var assemblyName = "SampleAssembly";
             var t = typeof(Employee);
             var a = Assembly.Load(assemblyName);
             var classes =

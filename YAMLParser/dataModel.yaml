@@ -1,24 +1,23 @@
 # 3 Classes
-
 Employee: Object
-  Name: String
-  FamilyName: String SureName
-  StartDate: OffsetDateTime
-  EmploymentDuration: double
-  UnemploymentDuration: Double
-  ActualStart: OffsetDateTime
-  Manager: Manager DirectManager
-  NetPay: int
+	Name: String 
+	FamilyName: String SureName
+	StartDate: OffsetDateTime 
+	EmploymentDuration: double 
+	UnemploymentDuration: Double 
+	ActualStart: OffsetDateTime 
+	Manager: Manager DirectManager
+	NetPay: int 
 
 
 HRDepart: Object
-  Employees: List<Employee>
-  Managers: List<Manager>
+	Employees: List<Employee> 
+	Managers: List<Manager> 
 
 
 Manager: Employee
-  Subordinates: List<Employee>
-  Options: Integer
-  DateOfInception: OffsetDateTime
-  Bonus: int
+	Subordinates: List<Employee> 
+	Options: Integer 
+	DateOfInception: OffsetDateTime 
+	Bonus: int 
 

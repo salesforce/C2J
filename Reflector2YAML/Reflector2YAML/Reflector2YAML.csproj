@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TestAssembly\TestAssembly.csproj" />
+      <ProjectReference Include="..\SampleAssembly\SampleAssembly.csproj" />
     </ItemGroup>
 
 </Project>

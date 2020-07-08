@@ -1,16 +1,18 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class ODMParser {
 
-    public Map<String, String> Parse(List<String> yamlObjectDataModel) {
+    Map<String, String> classes;
+    String packageName;
 
-        List<String> currentYaml = new ArrayList<>();
 
-        Map<String, String> classes = new HashMap<>();
+    public Map<String, String> Parse(List<String> yamlObjectDataModel, String packageName) {
+
+        this.packageName=packageName;
+        this.classes = new HashMap<String, String>();
+
+        List<String> currentYaml = new ArrayList();
 
         for (String currentLine : yamlObjectDataModel) {
             if (currentLine.isBlank() || currentLine.isEmpty() || currentLine.startsWith("#"))
@@ -18,32 +20,32 @@ public class ODMParser {
 
             if (!currentYaml.isEmpty()) {
                 if (!currentLine.startsWith("\t") && !currentLine.startsWith(" ")) {
-                    String className = Escape(currentYaml.get(0).split(" ")[0]);
-                    String baseClass = Escape(currentYaml.get(0).split(" ")[1]);
-
-                    classes.put(className,
-                            GenerateClass(className, baseClass, currentYaml.subList(1, currentYaml.size())));
+                    GenerateClass(currentYaml);
                     currentYaml.clear();
                 }
             }
             currentYaml.add(Escape(currentLine));
         }
 
-        if (!currentYaml.isEmpty()) {
-            var tokens = Escape(currentYaml.get(0)).split(" ");
-            String className = tokens[0];
-            String baseClass = tokens[1];
-            classes.put(className, GenerateClass(className, baseClass, currentYaml.subList(1, currentYaml.size())));
-        }
+        if (!currentYaml.isEmpty())
+            GenerateClass(currentYaml);
+
 
         return classes;
+    }
+
+    private void GenerateClass(List<String> currentYaml) {
+        var tokens = Escape(currentYaml.get(0)).split(" ");
+        String className = tokens[0];
+        String baseClass = tokens[1];
+        this.classes.put(className, GenerateClass(className, baseClass, currentYaml.subList(1, currentYaml.size())));
     }
 
     private String Escape(String currentLine) {
         return currentLine.replace(":", "").stripLeading().trim().replace("-", "");
     }
 
-    static String GenerateClass(String className, String baseClass, List<String> classYaml) {
+    String GenerateClass(String className, String baseClass, List<String> classYaml) {
         var javaClass = Header(className, baseClass, classYaml);
 
         javaClass.append(DeclareMembers(classYaml));
@@ -78,7 +80,7 @@ public class ODMParser {
             else if ("int double".contains(memberType))
                 toString.append(String.format("\t\t\t (%s == 0 ? \"\":\" %s = ' \" + %s+\"'\")+\n", originalMemberName, originalMemberName, originalMemberName));
             else
-                toString.append(String.format("\t\t\t \" %s = ' \" + %s+\"'\"+\n", originalMemberName, originalMemberName));
+                toString.append(String.format("\t\t\t \" %s = ' \" + %s+\"'\"+\n", originalMemberName, originalMemberName, originalMemberName));
         }
 
         toString.append("\t\t'}';\n\t}\n");
@@ -88,31 +90,32 @@ public class ODMParser {
     }
 
     static void AddUsing(String predicate, String using, List<String> classYaml, StringBuilder javaClass) {
-        if (classYaml.stream().anyMatch(l -> l.contains(predicate)))
+        if (classYaml.stream().filter(l -> l.contains(predicate)).findAny().isPresent())
             javaClass.append(String.format("import %s;\n", using));
     }
 
-    private static StringBuilder Header(String name, String baseClass, List<String> classYaml) {
+    private StringBuilder Header(String name, String baseClass, List<String> classYaml) {
         StringBuilder javaClass;
-        javaClass = new StringBuilder("package Model; \n\n");
+        javaClass = new StringBuilder(String.format("package %s; \n\n", this.packageName));
 
         javaClass.append("import com.fasterxml.jackson.annotation.JsonGetter;\n");
         javaClass.append("import com.fasterxml.jackson.annotation.JsonSetter;\n");
         javaClass.append("import org.jetbrains.annotations.Nullable;\n");
 
 
+
+        //AddUsing("DayOfWeek", "Model.DayOfWeek", classYaml, javaClass);
         AddUsing("List", "java.util.List", classYaml, javaClass);
         AddUsing("ObjectNode", "com.fasterxml.jackson.databind.node.ObjectNode", classYaml, javaClass);
         AddUsing("LocalTime", "java.time.LocalTime", classYaml, javaClass);
-        // AddUsing("OffsetDateTime", "java.util.Date", classYaml, javaClass);
         AddUsing("TimeZone", "java.util.TimeZone", classYaml, javaClass);
+        AddUsing("RelatedObjectCollection", "Model.RelatedObjectCollection", classYaml, javaClass);
 
         AddUsing("LocalDateTime", "java.time.LocalDateTime", classYaml, javaClass);
         AddUsing("LocalDateTime", "java.time.LocalDate", classYaml, javaClass);
         AddUsing("OffsetDateTime", "com.fasterxml.jackson.databind.annotation.JsonSerialize", classYaml, javaClass);
         AddUsing("OffsetDateTime", "com.fasterxml.jackson.databind.annotation.JsonDeserialize", classYaml, javaClass);
         AddUsing("OffsetDateTime", "java.time.OffsetDateTime", classYaml, javaClass);
-        AddUsing("OffsetDateTime", "java.time.ZoneOffset", classYaml, javaClass);
 
         if (baseClass.equals("Object"))
             javaClass.append(String.format("import %s;\n", "com.fasterxml.jackson.annotation.JsonIgnoreProperties"));
@@ -176,12 +179,12 @@ public class ODMParser {
 
         accessors.append(String.format("\n\t@JsonGetter(\"%s\")", memberName));
         if (date)
-            accessors.append(" @JsonDeserialize(using = CustomDateTimeDeserializer.class) ");
+            accessors.append(" @JsonDeserialize(using = Model.CustomDateTimeDeserializer.class) ");
         accessors.append(String.format("\n\tpublic %s get%s() {\n\t\treturn %s;\n\t}\n", memberType, originalMemberName, originalMemberName));
 
         accessors.append(String.format("\t@JsonSetter(\"%s\")", memberName));
         if (date)
-            accessors.append(" @JsonSerialize(using = CustomDateTimeSerializer.class)");
+            accessors.append(" @JsonSerialize(using = Model.CustomDateTimeSerializer.class)");
         accessors.append(String.format("\n\tpublic void set%s(%s %s) {\n\t\tthis.%s = %s;\n\t}\n\n",
                 originalMemberName, memberType, originalMemberName, originalMemberName, originalMemberName));
     }

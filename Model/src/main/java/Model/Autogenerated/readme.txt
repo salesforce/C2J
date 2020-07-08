@@ -1,0 +1,1 @@
+All auto generated java classes go in this folder.

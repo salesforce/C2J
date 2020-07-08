@@ -15,6 +15,15 @@ import java.util.TimeZone;
 
 public class CustomDateTimeDeserializer extends StdDeserializer<OffsetDateTime> {
 
+    public CustomDateTimeDeserializer() {
+        this(null);
+    }
+
+    public CustomDateTimeDeserializer(Class<?> vc) {
+        super(vc);
+    }
+
+
     static DateTimeFormatter dtFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;//DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZHH:mm");
     static SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
     static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -22,13 +31,6 @@ public class CustomDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
     static {
         dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }
-    public CustomDateTimeDeserializer() {
-        this(null);
-    }
-
-    public CustomDateTimeDeserializer(Class<?> vc) {
-        super(vc);
     }
 
     static OffsetDateTime deserializeOffsetDateTime(String date) {
@@ -56,7 +58,7 @@ public class CustomDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
         }
     }
 
-    static OffsetDateTime deserialize(String date) {
+    public static OffsetDateTime deserialize(String date) {
 
         var t = deserializeOffsetDateTime(date);
         if (t != null)
@@ -65,11 +67,9 @@ public class CustomDateTimeDeserializer extends StdDeserializer<OffsetDateTime> 
         t = deserializeLocalDateTime(date);
         if (t != null)
             return t;
-
         t = deserializeUsingFormatter(date, dateTimeFormatter);
         if (t != null)
             return t;
-
         t = deserializeUsingFormatter(date, dateFormatter);
         if (t != null)
             return t;
