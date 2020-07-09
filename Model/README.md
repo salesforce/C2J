@@ -1,4 +1,4 @@
-* Model 
+# Model 
 
 Auto generated JAVA code from the YAMLParser output. 
 This is the final java artifact, which represents the C# data model. 
