@@ -110,18 +110,24 @@ namespace SFLibReflector
 
         private static string ToYaml(Type t)
         {
+            if(t==null)
+                throw new ArgumentNullException(nameof(t));
+            
             var properties = t.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic |
                                              BindingFlags.DeclaredOnly);
             properties = properties.Where(IsSerializable).ToArray();
 
-            var yml = new StringBuilder($"\n{t.Name}: {t.BaseType.Name}\n");
+            var yml = new StringBuilder($"{t.Name}:\n");
+
+            if(t.BaseType?.Namespace!="Object")
+                yml.AppendFormat($"    base: {t.BaseType?.Name}\n");
 
             // if(!properties.Any())
             //return $"# {t.Name}";
 
             foreach (var m in properties)
                 yml.AppendLine(
-                    $"\t{PropertyName(m)}: {GetPropertyType(m)} {(PropertyName(m) != m.Name ? m.Name : "")}");
+                    $"    {PropertyName(m)}: {GetPropertyType(m)} {(PropertyName(m) != m.Name ? m.Name : "")}");
 
             return yml.ToString();
         }
@@ -135,8 +141,7 @@ namespace SFLibReflector
                 GetAllClasses(assemblyName) //.Where(t => t.IsDefined(typeof(JsonObjectAttribute), true))
                     .OrderBy(c => c.Name).ToList();
 
-            var reflect = new StringBuilder($"# {classes.Count()} Classes");
-            classes = classes;
+            var reflect = new StringBuilder($"\n\n# {classes.Count()} Classes\n\n");
             foreach (var c in classes)
                 reflect.AppendLine(ToYaml(c));
 
