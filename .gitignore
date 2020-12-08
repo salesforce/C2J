@@ -118,3 +118,9 @@ Reflector2YAML/SampleAssembly/obj/SampleAssembly.csproj.nuget.g.props
 Reflector2YAML/SampleAssembly/obj/TestAssembly.csproj.nuget.g.props
 Reflector2YAML/SampleAssembly/obj/Debug/netcoreapp3.1/.NETCoreApp,Version=v3.1.AssemblyAttributes.cs
 YAMLParser/build/classes/java/main/AutogenerateArgs.class
+*.lock
+*.properties
+*.iml
+*.v2
+Reflector2YAML/.idea/.idea.Reflector2YAML/.idea/codeStyles/codeStyleConfig.xml
+Reflector2YAML/.vs/Reflector2YAML/v16/.suo
